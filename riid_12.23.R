@@ -54,13 +54,30 @@ training_set %>%
   mutate(avg_user_count = sum(n)/4872)
 
 
+# logistic regression 
 
-View(train) 
+multi_log <- glm(answered_correctly ~ content_id + task_container_id
+                 + prior_question_elapsed_time,
+                 data = train, family = binomial)
 
-glm(answered_correctly ~ content_id, data = train, family = binomial) %>%
-  summary()
+
+training_prediction <- predict(multi_log, 
+                               newdata = training_set, type = "response") 
+
+hist(training_prediction)
+
+testing_prediction <- predict(multi_log, 
+                              newdata = testing_set, type = "response") 
 
 
+
+prediction_cutoff <- ifelse(testing_prediction > 0.5, 1, 0)
+table(prediction_cutoff, testing_set$answered_correctly)
+
+testing_prediction <- as.numeric(testing_prediction) 
+
+confusionMatrix(table(testing_set$answered_correctly, 
+                      prediction_cutoff))
 
 
 
